@@ -3,168 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Octo Go: Infinity</title>
+    <title>Octo Go: V15 Alive</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <div id="particle-layer"></div>
-    <div id="toast-container"></div>
-    <div id="floating-tooltip" class="hidden"></div>
+    <div id="flash-overlay" class="pointer-events-none fixed inset-0 z-50 opacity-0 transition-opacity duration-100 bg-red-500/30"></div>
+    <div id="particle-layer" class="pointer-events-none fixed inset-0 z-40 overflow-hidden"></div>
+    <div id="toast-container" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2"></div>
+    <div id="tooltip" class="fixed hidden z-[100] bg-slate-900 border border-slate-600 p-3 rounded shadow-xl text-xs max-w-xs pointer-events-none text-white"></div>
 
-    <div id="modal-overlay" class="hidden">
-        <div id="modal-content"></div>
+    <div id="modal-overlay" class="fixed inset-0 bg-black/90 z-[60] hidden flex items-center justify-center backdrop-blur-sm">
+        <div id="modal-content" class="bg-slate-900 border-2 border-blue-500 p-8 rounded-xl max-w-lg w-full text-center shadow-[0_0_50px_rgba(59,130,246,0.3)] transform scale-95 opacity-0 transition-all duration-300"></div>
     </div>
 
-    <div class="layout-grid">
+    <div class="main-grid">
         
-        <div class="panel col-left">
-            <div class="panel-header">
-                <span class="text-blue-400">STATUT PILOTE</span>
-                <span class="text-xs text-slate-500">ID: OCTO-V14</span>
+        <div class="col-left panel">
+            <div class="panel-header text-blue-400">
+                <span>STATUT PILOTE</span>
+                <span class="text-[10px] text-slate-600">SYS: ONLINE</span>
             </div>
-
-            <div class="hero-card group">
+            
+            <div class="hero-box group relative">
                 <div class="absolute top-2 right-2 text-right z-10">
                     <div class="text-2xl font-bold text-white font-tech">LVL <span id="ui-lvl">1</span></div>
-                    <div class="text-xs text-blue-300">EXP 0 / 100</div>
                 </div>
-                <div id="vis-hero" class="text-8xl transition-transform duration-500 group-hover:scale-110 cursor-pointer">?</div>
-                <div id="vis-pet" class="text-4xl absolute bottom-2 left-2 animate-bounce"></div>
+                <div id="hero-visual" class="text-9xl transition-transform duration-200 cursor-pointer select-none">?</div>
+                <div id="pet-visual" class="text-4xl absolute bottom-2 left-2 animate-bounce"></div>
             </div>
 
             <div class="p-4 space-y-4">
-                <div>
-                    <div class="flex justify-between text-xs font-bold text-slate-400 mb-1">INTÉGRITÉ (HP) <span id="ui-hp-txt" class="text-white">100/100</span></div>
-                    <div class="bar-track"><div id="ui-hp-bar" class="bar-fill hp-fill" style="width: 100%;"></div></div>
-                </div>
-                <div>
-                    <div class="flex justify-between text-xs font-bold text-slate-400 mb-1">BOUCLIER <span id="ui-shield-txt" class="text-blue-400">0</span></div>
-                    <div class="bar-track"><div id="ui-shield-bar" class="bar-fill shield-fill" style="width: 0%;"></div></div>
+                <div class="relative">
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1 uppercase">
+                        <span>Intégrité Structurelle</span>
+                        <span id="ui-hp-txt" class="text-white">100/100</span>
+                    </div>
+                    <div class="h-3 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-700">
+                        <div id="ui-hp-bar" class="h-full bg-gradient-to-r from-red-600 to-red-400 w-full transition-all duration-300"></div>
+                    </div>
+                    <div class="h-1 w-full bg-slate-950/50 mt-1 rounded-full overflow-hidden">
+                        <div id="ui-shield-bar" class="h-full bg-blue-400 w-0 transition-all duration-300"></div>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="stat-box">
-                        <div class="label">PUISSANCE</div>
-                        <div class="value text-blue-400" id="ui-atk">-</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="label">ARMURE</div>
-                        <div class="value text-green-400" id="ui-def">-</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="label">CRITIQUE</div>
-                        <div class="value text-red-400" id="ui-crit">-</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="label">VITESSE</div>
-                        <div class="value text-yellow-400" id="ui-spd">-</div>
-                    </div>
+                <div class="grid grid-cols-2 gap-2 text-center">
+                    <div class="stat-card" data-tip="Dégâts infligés">⚔️ <span id="ui-atk" class="text-blue-300 font-bold text-lg">0</span></div>
+                    <div class="stat-card" data-tip="Réduction dégâts">🛡️ <span id="ui-def" class="text-green-300 font-bold text-lg">0</span></div>
+                    <div class="stat-card" data-tip="Chance coup double">🎯 <span id="ui-crit" class="text-red-300 font-bold text-lg">0%</span></div>
+                    <div class="stat-card" data-tip="Vitesse d'action">⚡ <span id="ui-spd" class="text-yellow-300 font-bold text-lg">1.0</span></div>
                 </div>
             </div>
 
             <div class="mt-auto p-4 border-t border-white/5">
-                <div class="text-[10px] text-slate-500 mb-2 uppercase tracking-widest">Équipement Actif</div>
+                <div class="text-[10px] text-slate-500 uppercase mb-2">Équipement</div>
                 <div class="flex gap-2">
-                    <div id="slot-w" class="slot flex-1 text-slate-600">⚔️</div>
-                    <div id="slot-h" class="slot flex-1 text-slate-600">🛡️</div>
-                    <div id="slot-p" class="slot flex-1 text-slate-600">🐾</div>
+                    <div id="slot-w" class="slot" data-type="weapon">⚔️</div>
+                    <div id="slot-h" class="slot" data-type="head">🧢</div>
+                    <div id="slot-p" class="slot" data-type="pet">🐾</div>
                 </div>
-                <button onclick="Core.hardReset()" class="w-full mt-4 text-[9px] text-red-900 hover:text-red-500 uppercase font-bold">Réinitialiser Système</button>
+                <button onclick="Core.hardReset()" class="w-full mt-4 text-[9px] text-red-900 hover:text-red-500 font-bold uppercase tracking-widest transition-colors">Formatage d'Urgence</button>
             </div>
         </div>
 
-        <div class="panel col-center flex flex-col">
+        <div class="col-center panel flex flex-col">
             <div class="panel-header flex justify-between">
-                <div class="flex items-center gap-4">
-                    <span class="font-bold text-white font-tech text-lg">ZONE <span id="ui-zone" class="text-blue-400">1-1</span></span>
-                    <span class="text-xs text-slate-500 border-l border-slate-700 pl-4">JOUR <span id="ui-day" class="text-white font-bold">1</span></span>
-                </div>
-                <div class="flex gap-4 font-mono font-bold text-lg">
-                    <span class="text-yellow-500">🪙 <span id="ui-gold">0</span></span>
-                    <span class="text-purple-400">✨ <span id="ui-perls">0</span></span>
+                <div class="font-tech text-lg text-white">ZONE <span id="ui-zone" class="text-blue-400">1-1</span></div>
+                <div class="flex gap-4 text-lg font-mono font-bold">
+                    <span class="text-yellow-400 drop-shadow-md">🪙 <span id="ui-gold">0</span></span>
+                    <span class="text-purple-400 drop-shadow-md">✨ <span id="ui-perls">0</span></span>
                 </div>
             </div>
 
-            <div class="stage-view relative flex-grow bg-slate-950 flex flex-col items-center justify-center overflow-hidden">
-                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-20"></div>
+            <div class="relative flex-grow bg-slate-950 overflow-hidden flex flex-col items-center justify-center stage-fx">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 animate-slide-bg"></div>
                 
-                <div id="enemy-container" class="relative z-10 flex flex-col items-center transition-all duration-300 opacity-0 transform translate-y-10 hidden">
-                    <div class="w-64 h-4 bg-black border border-red-900/50 rounded-full overflow-hidden mb-4 shadow"><div id="ui-enemy-bar" class="h-full bg-red-600 w-full transition-all duration-200"></div></div>
-                    <div id="vis-enemy" class="text-9xl filter drop-shadow-2xl animate-float">🦀</div>
-                    <div id="enemy-name" class="mt-4 text-red-400 font-bold font-tech tracking-widest bg-black/60 px-4 py-1 rounded border border-red-500/20">CIBLE</div>
+                <div id="enemy-container" class="relative z-10 flex flex-col items-center transition-all duration-300 opacity-0 transform translate-y-10 scale-90">
+                    <div class="w-48 h-3 bg-black border border-red-900 rounded-full overflow-hidden mb-2 shadow-lg">
+                        <div id="ui-enemy-bar" class="h-full bg-red-600 w-full transition-all duration-200"></div>
+                    </div>
+                    <div id="vis-enemy" class="text-9xl filter drop-shadow-2xl transition-transform">🦀</div>
+                    <div id="enemy-name" class="mt-2 text-red-400 font-bold font-tech bg-black/60 px-3 py-1 rounded border border-red-900/50">CIBLE</div>
                 </div>
 
-                <div id="narrative-layer" class="text-center z-20">
-                    <h1 id="txt-main" class="text-5xl font-black text-white drop-shadow-lg mb-2 font-tech">OCTO GO</h1>
-                    <p id="txt-sub" class="text-blue-400 font-mono text-sm bg-black/80 px-4 py-1 rounded border border-blue-500/30">INITIALISATION...</p>
+                <div id="narrative-box" class="z-20 text-center">
+                    <h1 id="txt-main" class="text-4xl font-black text-white drop-shadow-lg mb-2 tracking-wide font-tech">SYSTÈME PRÊT</h1>
+                    <p id="txt-sub" class="text-blue-300 font-mono text-xs bg-black/80 px-3 py-1 rounded inline-block border border-blue-500/30">En attente...</p>
                 </div>
             </div>
 
-            <div class="h-48 border-t border-white/10 grid grid-cols-12">
-                <div class="col-span-8 p-3 bg-slate-900/50 border-r border-white/5 flex flex-col">
+            <div class="h-56 border-t border-white/10 grid grid-cols-12 bg-slate-900">
+                <div class="col-span-8 p-3 border-r border-white/5 flex flex-col">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-slate-500 uppercase">Module de Stockage</span>
-                        <button onclick="Core.openChest()" class="text-[10px] bg-purple-700 hover:bg-purple-600 text-white px-2 py-1 rounded font-bold transition">COFFRE (5✨)</button>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Soute</span>
+                        <div class="text-[10px] text-slate-600 font-mono"><span id="ui-inv-count">0</span>/24</div>
                     </div>
-                    <div id="grid-inv" class="flex flex-wrap gap-2 content-start overflow-y-auto pr-1"></div>
+                    
+                    <div class="flex-grow flex gap-2 overflow-hidden">
+                        <div id="grid-inv" class="flex-grow grid grid-cols-6 grid-rows-2 gap-2 overflow-y-auto content-start"></div>
+                        
+                        <button onclick="Core.openChest()" id="btn-chest" class="w-24 h-full bg-purple-900/20 border-2 border-purple-500/30 rounded-lg flex flex-col items-center justify-center hover:bg-purple-900/40 hover:border-purple-400 transition-all group">
+                            <div class="text-3xl mb-1 group-hover:scale-110 transition-transform">🎁</div>
+                            <div class="text-[9px] font-bold text-purple-300 uppercase">Ouvrir</div>
+                            <div class="text-[9px] text-white font-mono bg-purple-600 px-2 rounded mt-1">5 ✨</div>
+                        </button>
+                    </div>
                 </div>
-                <div class="col-span-4 p-3 flex flex-col gap-2 bg-slate-900">
-                    <button id="btn-main" onclick="Core.mainAction()" class="btn-mega flex-grow">DÉMARRER</button>
-                    <div class="flex gap-2">
-                        <button id="btn-auto" onclick="Core.toggleAuto()" class="btn-mini">AUTO: OFF</button>
-                        <button id="btn-spd" onclick="Core.toggleSpeed()" class="btn-mini">VIT: x1</button>
+
+                <div class="col-span-4 p-3 flex flex-col gap-2">
+                    <button id="btn-main" onclick="Core.clickMain()" class="btn-mega flex-grow shadow-lg hover:shadow-blue-500/20">DÉMARRER</button>
+                    <div class="flex gap-2 h-8">
+                        <button id="btn-auto" onclick="Core.toggleAuto()" class="btn-small">AUTO: OFF</button>
+                        <button id="btn-spd" onclick="Core.toggleSpeed()" class="btn-small">VIT: x1</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-right flex flex-col gap-4">
-            <div class="panel flex-grow flex flex-col">
-                <div class="panel-header">MODULES DE COMBAT</div>
-                <div id="list-skills" class="p-3 space-y-2 overflow-y-auto flex-grow">
-                    <div class="text-xs text-slate-600 text-center italic mt-10">Aucun module installé</div>
-                </div>
+        <div class="col-right panel flex flex-col">
+            <div class="panel-header text-yellow-500">MODULES (SKILLS)</div>
+            <div id="list-skills" class="p-3 space-y-2 overflow-y-auto flex-grow bg-slate-900/50"></div>
+            
+            <div class="h-1/3 border-t border-white/10 flex flex-col">
+                <div class="panel-header text-gray-500">JOURNAL</div>
+                <div id="game-logs" class="flex-grow p-2 overflow-y-auto font-mono text-[10px] space-y-1 text-slate-400 bg-black/40"></div>
             </div>
 
-            <div class="panel h-1/3 flex flex-col">
-                <div class="panel-header">JOURNAL SYSTÈME</div>
-                <div id="game-logs" class="p-2 overflow-y-auto font-mono text-[10px] text-slate-400 space-y-1 flex-grow bg-black/20">
-                    <div>[SYS] Interface chargée.</div>
-                </div>
-            </div>
-
-            <div class="flex gap-2">
-                <button onclick="UI.switchTab('adventure')" id="nav-adv" class="btn-nav active">AVENTURE</button>
-                <button onclick="UI.switchTab('hub')" id="nav-hub" class="btn-nav">BASE</button>
+            <div class="flex p-2 gap-2 bg-slate-900 border-t border-white/5">
+                <button onclick="UI.tab('adventure')" id="tab-adv" class="btn-tab active">MISSION</button>
+                <button onclick="UI.tab('hub')" id="tab-hub" class="btn-tab">BASE</button>
             </div>
         </div>
 
-        <div id="view-hub" class="hidden absolute inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center">
-            <h2 class="text-4xl font-black text-white mb-10 font-tech tracking-widest text-shadow-glow">CENTRE D'AMÉLIORATION</h2>
-            <div class="grid grid-cols-3 gap-8 w-full max-w-5xl px-10">
-                <button onclick="Core.upgrade('hp')" class="card-upgrade group border-red-500/30 hover:border-red-500">
-                    <div class="text-5xl mb-4 group-hover:scale-110 transition">❤️</div>
-                    <div class="text-2xl font-bold text-white">VITALITÉ</div>
-                    <div class="text-sm text-slate-400">Niveau <span id="lvl-hp">0</span></div>
-                    <div class="cost-badge bg-yellow-500 text-black"><span id="cost-hp">100</span> 🪙</div>
+        <div id="view-hub" class="hidden absolute inset-0 z-30 bg-slate-950 flex flex-col items-center justify-center p-10">
+            <h2 class="text-5xl font-black text-white mb-12 font-tech tracking-tighter text-shadow-neon">CENTRE D'AMÉLIORATION</h2>
+            <div class="grid grid-cols-3 gap-8 w-full max-w-6xl">
+                <button onclick="Core.upgrade('hp')" class="hub-card group border-red-500/40 hover:border-red-500 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)]">
+                    <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">❤️</div>
+                    <div class="text-3xl font-bold text-white mb-2">VITALITÉ</div>
+                    <div class="text-slate-400 mb-4">Niveau <span id="lvl-hp">0</span></div>
+                    <div class="bg-yellow-500 text-black font-bold px-4 py-1 rounded-full"><span id="cost-hp">100</span> 🪙</div>
                 </button>
-                <button onclick="Core.upgrade('atk')" class="card-upgrade group border-blue-500/30 hover:border-blue-500">
-                    <div class="text-5xl mb-4 group-hover:scale-110 transition">⚔️</div>
-                    <div class="text-2xl font-bold text-white">FORCE</div>
-                    <div class="text-sm text-slate-400">Niveau <span id="lvl-atk">0</span></div>
-                    <div class="cost-badge bg-yellow-500 text-black"><span id="cost-atk">100</span> 🪙</div>
+                <button onclick="Core.upgrade('atk')" class="hub-card group border-blue-500/40 hover:border-blue-500 hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                    <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">⚔️</div>
+                    <div class="text-3xl font-bold text-white mb-2">PUISSANCE</div>
+                    <div class="text-slate-400 mb-4">Niveau <span id="lvl-atk">0</span></div>
+                    <div class="bg-yellow-500 text-black font-bold px-4 py-1 rounded-full"><span id="cost-atk">100</span> 🪙</div>
                 </button>
-                <button onclick="Core.upgrade('def')" class="card-upgrade group border-emerald-500/30 hover:border-emerald-500">
-                    <div class="text-5xl mb-4 group-hover:scale-110 transition">🛡️</div>
-                    <div class="text-2xl font-bold text-white">DÉFENSE</div>
-                    <div class="text-sm text-slate-400">Niveau <span id="lvl-def">0</span></div>
-                    <div class="cost-badge bg-yellow-500 text-black"><span id="cost-def">100</span> 🪙</div>
+                <button onclick="Core.upgrade('def')" class="hub-card group border-emerald-500/40 hover:border-emerald-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                    <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">🛡️</div>
+                    <div class="text-3xl font-bold text-white mb-2">BLINDAGE</div>
+                    <div class="text-slate-400 mb-4">Niveau <span id="lvl-def">0</span></div>
+                    <div class="bg-yellow-500 text-black font-bold px-4 py-1 rounded-full"><span id="cost-def">100</span> 🪙</div>
                 </button>
             </div>
-            <button onclick="UI.switchTab('adventure')" class="mt-12 px-8 py-3 border border-slate-600 rounded hover:bg-slate-800 text-white font-bold transition">RETOUR MISSION</button>
+            <button onclick="UI.tab('adventure')" class="mt-16 px-10 py-4 border border-slate-600 rounded-full hover:bg-slate-800 text-white font-bold tracking-widest transition-all">RETOUR AUX OPÉRATIONS</button>
         </div>
 
     </div>
