@@ -3,167 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Octo Go: V15 Alive</title>
+    <title>Octo Go: Infinity - V17 BUNKER</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        /* ==================== DESIGN (CSS) ==================== */
+        :root { --bg-dark: #020617; --panel-bg: #0b1121; --border: #1e293b; --neon-blue: #3b82f6; }
+        body { background: var(--bg-dark); color: #e2e8f0; font-family: 'Rajdhani', sans-serif; overflow: hidden; height: 100vh; user-select: none; }
+        
+        /* LAYOUT */
+        .layout { display: grid; grid-template-columns: 350px 1fr 320px; gap: 1rem; height: 100vh; padding: 1rem; max-width: 1920px; margin: 0 auto; }
+        .panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* HERO */
+        .hero-zone { height: 250px; background: radial-gradient(circle, #172554 0%, #020617 100%); position: relative; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); }
+        .hero-img { font-size: 100px; filter: drop-shadow(0 0 20px rgba(59,130,246,0.5)); transition: 0.3s; cursor: pointer; }
+        .hero-img:hover { transform: scale(1.1); }
+        
+        /* STATS */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
+        .stat-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; text-align: center; }
+        .stat-val { font-family: 'Share Tech Mono'; font-size: 18px; font-weight: bold; }
+        
+        /* STAGE */
+        .stage { flex-grow: 1; background: #020617; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .stage-bg { position: absolute; inset: 0; opacity: 0.2; background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 30px 30px; }
+        
+        /* CONTROLS */
+        .btn-big { width: 100%; height: 100%; background: linear-gradient(to bottom, #2563eb, #1d4ed8); border-bottom: 4px solid #1e40af; border-radius: 8px; color: white; font-weight: 900; font-size: 24px; letter-spacing: 2px; }
+        .btn-big:active { transform: translateY(4px); border-bottom: 0; }
+        .btn-big:disabled { filter: grayscale(100%); cursor: not-allowed; transform: none; border-bottom: 4px; }
+        
+        /* ITEMS */
+        .slot { width: 100%; height: 50px; background: #0f172a; border: 2px solid #334155; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.2s; }
+        .slot:hover { border-color: var(--neon-blue); background: #1e293b; }
+        .r-common { border-color: #64748b; } .r-rare { border-color: #3b82f6; } .r-legendary { border-color: #f59e0b; animation: pulse 2s infinite; }
+        
+        /* FX */
+        .dmg-float { position: absolute; font-weight: 900; font-size: 32px; animation: floatUp 0.8s forwards; pointer-events: none; z-index: 100; text-shadow: 2px 2px 0 #000; }
+        @keyframes floatUp { to { transform: translateY(-80px); opacity: 0; } }
+        @keyframes pulse { 50% { border-color: #fbbf24; box-shadow: 0 0 15px #fbbf24; } }
+        
+        /* MODAL */
+        .modal-bg { position: fixed; inset: 0; bg: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); background: rgba(0,0,0,0.8); }
+        .modal-box { background: #0f172a; border: 2px solid var(--neon-blue); padding: 2rem; border-radius: 1rem; text-align: center; min-width: 300px; }
+        .show { display: flex !important; }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
 
-    <div id="flash-overlay" class="pointer-events-none fixed inset-0 z-50 opacity-0 transition-opacity duration-100 bg-red-500/30"></div>
-    <div id="particle-layer" class="pointer-events-none fixed inset-0 z-40 overflow-hidden"></div>
-    <div id="toast-container" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2"></div>
-    <div id="tooltip" class="fixed hidden z-[100] bg-slate-900 border border-slate-600 p-3 rounded shadow-xl text-xs max-w-xs pointer-events-none text-white"></div>
-
-    <div id="modal-overlay" class="fixed inset-0 bg-black/90 z-[60] hidden flex items-center justify-center backdrop-blur-sm">
-        <div id="modal-content" class="bg-slate-900 border-2 border-blue-500 p-8 rounded-xl max-w-lg w-full text-center shadow-[0_0_50px_rgba(59,130,246,0.3)] transform scale-95 opacity-0 transition-all duration-300"></div>
+    <div id="particle-layer" class="fixed inset-0 pointer-events-none z-50"></div>
+    <div id="modal-layer" class="modal-bg">
+        <div id="modal-content" class="modal-box"></div>
     </div>
 
-    <div class="main-grid">
+    <div class="layout">
         
-        <div class="col-left panel">
-            <div class="panel-header text-blue-400">
-                <span>STATUT PILOTE</span>
-                <span class="text-[10px] text-slate-600">SYS: ONLINE</span>
+        <div class="panel">
+            <div class="p-3 border-b border-white/10 flex justify-between font-bold text-blue-400 font-mono">
+                <span>PILOTE</span> <span>LVL <span id="ui-lvl" class="text-white">1</span></span>
             </div>
-            
-            <div class="hero-box group relative">
-                <div class="absolute top-2 right-2 text-right z-10">
-                    <div class="text-2xl font-bold text-white font-tech">LVL <span id="ui-lvl">1</span></div>
-                </div>
-                <div id="hero-visual" class="text-9xl transition-transform duration-200 cursor-pointer select-none">?</div>
-                <div id="pet-visual" class="text-4xl absolute bottom-2 left-2 animate-bounce"></div>
+            <div class="hero-zone">
+                <div id="vis-hero" class="hero-img">?</div>
             </div>
-
             <div class="p-4 space-y-4">
-                <div class="relative">
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1 uppercase">
-                        <span>Intégrité Structurelle</span>
-                        <span id="ui-hp-txt" class="text-white">100/100</span>
-                    </div>
-                    <div class="h-3 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-700">
-                        <div id="ui-hp-bar" class="h-full bg-gradient-to-r from-red-600 to-red-400 w-full transition-all duration-300"></div>
-                    </div>
-                    <div class="h-1 w-full bg-slate-950/50 mt-1 rounded-full overflow-hidden">
-                        <div id="ui-shield-bar" class="h-full bg-blue-400 w-0 transition-all duration-300"></div>
-                    </div>
+                <div>
+                    <div class="flex justify-between text-xs text-gray-400 mb-1">HP <span id="ui-hp-txt" class="text-white">100/100</span></div>
+                    <div class="h-2 bg-black rounded overflow-hidden"><div id="ui-hp-bar" class="h-full bg-red-500 w-full transition-all"></div></div>
                 </div>
-
-                <div class="grid grid-cols-2 gap-2 text-center">
-                    <div class="stat-card" data-tip="Dégâts infligés">⚔️ <span id="ui-atk" class="text-blue-300 font-bold text-lg">0</span></div>
-                    <div class="stat-card" data-tip="Réduction dégâts">🛡️ <span id="ui-def" class="text-green-300 font-bold text-lg">0</span></div>
-                    <div class="stat-card" data-tip="Chance coup double">🎯 <span id="ui-crit" class="text-red-300 font-bold text-lg">0%</span></div>
-                    <div class="stat-card" data-tip="Vitesse d'action">⚡ <span id="ui-spd" class="text-yellow-300 font-bold text-lg">1.0</span></div>
+                <div class="stat-grid">
+                    <div class="stat-box"><div class="text-[10px] text-gray-500">ATK</div><div id="ui-atk" class="stat-val text-blue-400">10</div></div>
+                    <div class="stat-box"><div class="text-[10px] text-gray-500">DEF</div><div id="ui-def" class="stat-val text-green-400">0</div></div>
                 </div>
             </div>
-
-            <div class="mt-auto p-4 border-t border-white/5">
-                <div class="text-[10px] text-slate-500 uppercase mb-2">Équipement</div>
+            <div class="mt-auto p-4 border-t border-white/10">
                 <div class="flex gap-2">
-                    <div id="slot-w" class="slot" data-type="weapon">⚔️</div>
-                    <div id="slot-h" class="slot" data-type="head">🧢</div>
-                    <div id="slot-p" class="slot" data-type="pet">🐾</div>
+                    <div id="slot-w" class="slot text-gray-600">⚔️</div>
+                    <div id="slot-h" class="slot text-gray-600">🛡️</div>
+                    <div id="slot-p" class="slot text-gray-600">🐾</div>
                 </div>
-                <button onclick="Core.hardReset()" class="w-full mt-4 text-[9px] text-red-900 hover:text-red-500 font-bold uppercase tracking-widest transition-colors">Formatage d'Urgence</button>
+                <button onclick="Core.hardReset()" class="text-xs text-red-800 font-bold mt-4 w-full text-center hover:text-red-500">🆘 SOS RESET</button>
             </div>
         </div>
 
-        <div class="col-center panel flex flex-col">
-            <div class="panel-header flex justify-between">
-                <div class="font-tech text-lg text-white">ZONE <span id="ui-zone" class="text-blue-400">1-1</span></div>
-                <div class="flex gap-4 text-lg font-mono font-bold">
-                    <span class="text-yellow-400 drop-shadow-md">🪙 <span id="ui-gold">0</span></span>
-                    <span class="text-purple-400 drop-shadow-md">✨ <span id="ui-perls">0</span></span>
-                </div>
+        <div class="panel">
+            <div class="p-3 border-b border-white/10 flex justify-between font-mono text-white">
+                <span>ZONE <span id="ui-zone" class="text-blue-400">1-1</span></span>
+                <span>JOUR <span id="ui-day">1</span></span>
+                <span class="text-yellow-400">🪙 <span id="ui-gold">0</span></span>
             </div>
-
-            <div class="relative flex-grow bg-slate-950 overflow-hidden flex flex-col items-center justify-center stage-fx">
-                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 animate-slide-bg"></div>
-                
-                <div id="enemy-container" class="relative z-10 flex flex-col items-center transition-all duration-300 opacity-0 transform translate-y-10 scale-90">
-                    <div class="w-48 h-3 bg-black border border-red-900 rounded-full overflow-hidden mb-2 shadow-lg">
-                        <div id="ui-enemy-bar" class="h-full bg-red-600 w-full transition-all duration-200"></div>
-                    </div>
-                    <div id="vis-enemy" class="text-9xl filter drop-shadow-2xl transition-transform">🦀</div>
-                    <div id="enemy-name" class="mt-2 text-red-400 font-bold font-tech bg-black/60 px-3 py-1 rounded border border-red-900/50">CIBLE</div>
-                </div>
-
-                <div id="narrative-box" class="z-20 text-center">
-                    <h1 id="txt-main" class="text-4xl font-black text-white drop-shadow-lg mb-2 tracking-wide font-tech">SYSTÈME PRÊT</h1>
-                    <p id="txt-sub" class="text-blue-300 font-mono text-xs bg-black/80 px-3 py-1 rounded inline-block border border-blue-500/30">En attente...</p>
-                </div>
-            </div>
-
-            <div class="h-56 border-t border-white/10 grid grid-cols-12 bg-slate-900">
-                <div class="col-span-8 p-3 border-r border-white/5 flex flex-col">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Soute</span>
-                        <div class="text-[10px] text-slate-600 font-mono"><span id="ui-inv-count">0</span>/24</div>
-                    </div>
-                    
-                    <div class="flex-grow flex gap-2 overflow-hidden">
-                        <div id="grid-inv" class="flex-grow grid grid-cols-6 grid-rows-2 gap-2 overflow-y-auto content-start"></div>
-                        
-                        <button onclick="Core.openChest()" id="btn-chest" class="w-24 h-full bg-purple-900/20 border-2 border-purple-500/30 rounded-lg flex flex-col items-center justify-center hover:bg-purple-900/40 hover:border-purple-400 transition-all group">
-                            <div class="text-3xl mb-1 group-hover:scale-110 transition-transform">🎁</div>
-                            <div class="text-[9px] font-bold text-purple-300 uppercase">Ouvrir</div>
-                            <div class="text-[9px] text-white font-mono bg-purple-600 px-2 rounded mt-1">5 ✨</div>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="col-span-4 p-3 flex flex-col gap-2">
-                    <button id="btn-main" onclick="Core.clickMain()" class="btn-mega flex-grow shadow-lg hover:shadow-blue-500/20">DÉMARRER</button>
-                    <div class="flex gap-2 h-8">
-                        <button id="btn-auto" onclick="Core.toggleAuto()" class="btn-small">AUTO: OFF</button>
-                        <button id="btn-spd" onclick="Core.toggleSpeed()" class="btn-small">VIT: x1</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-right panel flex flex-col">
-            <div class="panel-header text-yellow-500">MODULES (SKILLS)</div>
-            <div id="list-skills" class="p-3 space-y-2 overflow-y-auto flex-grow bg-slate-900/50"></div>
             
-            <div class="h-1/3 border-t border-white/10 flex flex-col">
-                <div class="panel-header text-gray-500">JOURNAL</div>
-                <div id="game-logs" class="flex-grow p-2 overflow-y-auto font-mono text-[10px] space-y-1 text-slate-400 bg-black/40"></div>
+            <div class="stage">
+                <div class="stage-bg"></div>
+                <div id="enemy-box" class="relative z-10 text-center hidden">
+                    <div class="w-32 h-2 bg-black mb-2 mx-auto border border-red-800"><div id="ui-en-bar" class="h-full bg-red-600 w-full"></div></div>
+                    <div id="vis-enemy" class="text-9xl filter drop-shadow-2xl">🦀</div>
+                    <div id="name-enemy" class="font-bold text-red-400 bg-black/50 px-2 rounded mt-2">CIBLE</div>
+                </div>
+                <div id="text-box" class="z-20 text-center">
+                    <h1 id="txt-title" class="text-4xl font-black text-white mb-2">SYSTÈME PRÊT</h1>
+                    <p id="txt-sub" class="text-blue-400 font-mono text-sm bg-black/80 px-2 py-1">En attente...</p>
+                </div>
             </div>
 
-            <div class="flex p-2 gap-2 bg-slate-900 border-t border-white/5">
-                <button onclick="UI.tab('adventure')" id="tab-adv" class="btn-tab active">MISSION</button>
-                <button onclick="UI.tab('hub')" id="tab-hub" class="btn-tab">BASE</button>
+            <div class="h-48 bg-slate-900 border-t border-white/10 grid grid-cols-12">
+                <div class="col-span-8 p-2 border-r border-white/10 overflow-y-auto">
+                    <div class="flex justify-between mb-2"><span class="text-xs text-gray-500 font-bold">STOCKAGE</span> <button onclick="Core.chest()" class="text-[10px] bg-purple-600 px-2 rounded text-white">COFFRE (5✨)</button></div>
+                    <div id="grid-inv" class="grid grid-cols-6 gap-1"></div>
+                </div>
+                <div class="col-span-4 p-2 flex flex-col gap-2">
+                    <button id="btn-act" onclick="Core.click()" class="btn-big">DÉMARRER</button>
+                    <div class="flex gap-1"><button onclick="Core.auto()" id="btn-auto" class="flex-1 bg-slate-800 text-[10px] text-gray-400 py-1 border border-slate-600 rounded">AUTO: OFF</button></div>
+                </div>
             </div>
         </div>
 
-        <div id="view-hub" class="hidden absolute inset-0 z-30 bg-slate-950 flex flex-col items-center justify-center p-10">
-            <h2 class="text-5xl font-black text-white mb-12 font-tech tracking-tighter text-shadow-neon">CENTRE D'AMÉLIORATION</h2>
-            <div class="grid grid-cols-3 gap-8 w-full max-w-6xl">
-                <button onclick="Core.upgrade('hp')" class="hub-card group border-red-500/40 hover:border-red-500 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)]">
-                    <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">❤️</div>
-                    <div class="text-3xl font-bold text-white mb-2">VITALITÉ</div>
-                    <div class="text-slate-400 mb-4">Niveau <span id="lvl-hp">0</span></div>
-                    <div class="bg-yellow-500 text-black font-bold px-4 py-1 rounded-full"><span id="cost-hp">100</span> 🪙</div>
-                </button>
-                <button onclick="Core.upgrade('atk')" class="hub-card group border-blue-500/40 hover:border-blue-500 hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-                    <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">⚔️</div>
-                    <div class="text-3xl font-bold text-white mb-2">PUISSANCE</div>
-                    <div class="text-slate-400 mb-4">Niveau <span id="lvl-atk">0</span></div>
-                    <div class="bg-yellow-500 text-black font-bold px-4 py-1 rounded-full"><span id="cost-atk">100</span> 🪙</div>
-                </button>
-                <button onclick="Core.upgrade('def')" class="hub-card group border-emerald-500/40 hover:border-emerald-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]">
-                    <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">🛡️</div>
-                    <div class="text-3xl font-bold text-white mb-2">BLINDAGE</div>
-                    <div class="text-slate-400 mb-4">Niveau <span id="lvl-def">0</span></div>
-                    <div class="bg-yellow-500 text-black font-bold px-4 py-1 rounded-full"><span id="cost-def">100</span> 🪙</div>
-                </button>
+        <div class="panel">
+            <div class="p-3 border-b border-white/10 font-bold text-gray-500 text-xs">MODULES</div>
+            <div id="list-skills" class="p-2 space-y-1 overflow-y-auto flex-grow bg-slate-900/50"></div>
+            <div class="h-1/3 border-t border-white/10 p-2 font-mono text-[10px] text-gray-400 overflow-y-auto" id="logs">
+                <div>[SYS] Chargement...</div>
             </div>
-            <button onclick="UI.tab('adventure')" class="mt-16 px-10 py-4 border border-slate-600 rounded-full hover:bg-slate-800 text-white font-bold tracking-widest transition-all">RETOUR AUX OPÉRATIONS</button>
+            <div class="flex p-2 gap-1 bg-slate-900">
+                <button onclick="UI.tab('adv')" class="flex-1 bg-slate-800 text-white text-xs py-2 rounded">AVENTURE</button>
+                <button onclick="UI.tab('hub')" class="flex-1 bg-slate-800 text-gray-500 text-xs py-2 rounded">BASE</button>
+            </div>
+        </div>
+
+        <div id="view-hub" class="absolute inset-0 bg-slate-950 z-30 flex flex-col items-center justify-center hidden">
+            <h2 class="text-4xl text-white font-bold mb-8">AMÉLIORATIONS</h2>
+            <div class="flex gap-4">
+                <button onclick="Core.upg('hp')" class="p-6 bg-slate-800 border border-red-500 rounded text-center"><div class="text-4xl">❤️</div><div class="text-white font-bold">HP</div><div class="text-yellow-400 text-xs">100 🪙</div></button>
+                <button onclick="Core.upg('atk')" class="p-6 bg-slate-800 border border-blue-500 rounded text-center"><div class="text-4xl">⚔️</div><div class="text-white font-bold">ATK</div><div class="text-yellow-400 text-xs">100 🪙</div></button>
+            </div>
+            <button onclick="UI.tab('adv')" class="mt-8 text-slate-400 underline">RETOUR</button>
         </div>
 
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // --- DATA ---
+        const DB = {
+            chars: [{id:"🐙",n:"Poulpe"},{id:"🦈",n:"Requin"},{id:"🐢",n:"Tortue"},{id:"👽",n:"Alien"}],
+            items: [
+                {n:"Dague",e:"🗡️",s:10,t:"weapon",r:"r-common"},{n:"Trident",e:"🔱",s:20,t:"weapon",r:"r-rare"},
+                {n:"Casque",e:"🪖",s:10,t:"head",r:"r-common"},{n:"Bouclier",e:"🛡️",s:25,t:"head",r:"r-rare"},
+                {n:"Dragon",e:"🐉",s:15,t:"pet",r:"r-legendary"},{n:"Crabe",e:"🦀",s:5,t:"pet",r:"r-common"}
+            ],
+            skills: {
+                'fire':{n:"Feu",i:"🔥",c:"text-orange-500"}, 'heal':{n:"Soin",i:"💚",c:"text-green-500"},
+                'bolt':{n:"Eclair",i:"⚡",c:"text-yellow-400"}, 'shield':{n:"Bouclier",i:"🛡️",c:"text-blue-400"}
+            }
+        };
+
+        let D = { gold:0, perls:50, stats:{hp:0,atk:0,def:0}, weapon:null, head:null, pet:null, inv:[], char:null };
+        let R = { active:false, day:0, hp:100, max:100, atk:10, def:0, skills:[] };
+        let C = { active:false, hp:0, max:0, atk:0, boss:false };
+        let Conf = { auto:false, tmr:null, act:null };
+
+        // --- CORE ---
+        const Core = {
+            init: () => {
+                let s = localStorage.getItem('octo_v17_bunker');
+                if(s) try{ D = JSON.parse(s); }catch(e){console.error(e);}
+                
+                if(!D.char) UI.modal('char');
+                else {
+                    Core.calc(); UI.upd();
+                    if(R.active && !C.active) UI.btn("CONTINUER", Core.next);
+                    else if(C.active) { C.active=false; UI.btn("REPRENDRE", Core.next); } // Crash fix
+                    else UI.btn("DÉMARRER", Core.start);
+                }
+            },
+            save: () => localStorage.setItem('octo_v17_bunker', JSON.stringify(D)),
+            hardReset: () => { if(confirm("RESET ?")) { localStorage.clear(); location.reload(); } },
+            
+            calc: () => {
+                R.max = 100 + (D.stats.hp*20);
+                R.atk = 10 + (D.stats.atk*5);
+                R.def = 0;
+                if(D.weapon) R.atk += D.weapon.s;
+                if(D.head) { R.def += D.head.s; R.max += D.head.s; }
+                if(D.pet) R.atk += D.pet.s;
+                R.hp = Math.min(R.hp, R.max);
+            },
+
+            pick: (c) => { D.char = c; Core.save(); document.getElementById('modal-layer').classList.remove('show'); UI.upd(); UI.btn("DÉMARRER", Core.start); },
+
+            start: () => {
+                Core.calc(); R.hp=R.max; R.day=0; R.skills=[]; R.active=true;
+                UI.scene('adv'); UI.btn("JOUR SUIVANT", Core.next); UI.txt("MISSION","Zone 1");
+                Core.next();
+            },
+
+            next: () => {
+                R.day++; Core.calc(); UI.upd();
+                if(R.day%10===0) { Core.fight(true); return; }
+                
+                if(Math.random()<0.6) Core.fight(false);
+                else {
+                    let r = Math.random();
+                    if(r<0.3) { D.gold+=30; UI.log("Coffre trouvé (+30 Or)"); }
+                    else if(r<0.6) { UI.modal('skill'); }
+                    else { R.hp = Math.min(R.max, R.hp+50); UI.log("Soin (+50 PV)"); }
+                    UI.upd(); Core.auto();
+                }
+            },
+
+            fight: (boss) => {
+                C.active=true; C.boss=boss;
+                C.max = (50+R.day*10)*(boss?5:1); C.hp=C.max; C.atk=(5+R.day)*(boss?2:1);
+                UI.scene('com');
+                document.getElementById('vis-enemy').innerText = boss?"🦑":"🦀";
+                document.getElementById('name-enemy').innerText = boss?"BOSS":"ENNEMI";
+                UI.btn("COMBAT...", null, true);
+                setTimeout(Core.turn, 500);
+            },
+
+            turn: () => {
+                if(!C.active) return;
+                
+                // Player Hit
+                let dmg = R.atk;
+                let crit = Math.random()<0.1; if(crit) dmg*=2;
+                C.hp -= dmg; 
+                UI.fx(dmg, crit?'#fbbf24':'#fff', 'vis-enemy');
+                UI.bar();
+
+                if(C.hp<=0) { setTimeout(()=>Core.end(true), 500); return; }
+
+                // Enemy Hit
+                setTimeout(()=>{
+                    if(!C.active) return;
+                    let edmg = Math.max(1, C.atk - R.def);
+                    R.hp -= edmg;
+                    UI.fx(edmg, '#f00', 'vis-hero');
+                    UI.upd();
+                    
+                    if(R.hp<=0) Core.end(false);
+                    else setTimeout(Core.turn, 500);
+                }, 500);
+            },
+
+            end: (win) => {
+                C.active=false;
+                if(win) {
+                    D.gold += 10+R.day;
+                    if(C.boss) { D.perls+=10; UI.log("BOSS VAINCU (+10 Perles)"); Core.save(); UI.btn("RETOUR", Core.start); }
+                    else { UI.btn("CONTINUER", Core.next); Core.auto(); }
+                } else {
+                    R.active=false; UI.log("Echec mission."); UI.btn("RELANCER", Core.start);
+                }
+                Core.save(); UI.scene('adv');
+            },
+
+            // ACTIONS
+            click: () => { if(Conf.act) Conf.act(); },
+            chest: () => { if(D.perls>=5){ D.perls-=5; let i={...DB.items[Math.floor(Math.random()*DB.items.length)]}; D.inv.push(i); Core.save(); UI.upd(); } },
+            equip: (i) => { let x=D.inv[i]; if(D[x.t])D.inv.push(D[x.t]); D[x.t]=x; D.inv.splice(i,1); Core.save(); Core.calc(); UI.upd(); },
+            addSkill: (k) => { 
+                let x=R.skills.find(s=>s.id===k); 
+                if(x) x.lvl++; else R.skills.push({id:k,lvl:1}); 
+                document.getElementById('modal-layer').classList.remove('show'); 
+                UI.upd(); Core.auto(); 
+            },
+            upg: (t) => { if(D.gold>=100){ D.gold-=100; D.stats[t]++; Core.save(); Core.calc(); UI.upd(); } },
+            
+            auto: () => { if(Conf.auto && R.active && !C.active) setTimeout(()=>{ let b=document.getElementById('btn-act'); if(!b.disabled) b.click(); }, 800); }
+        };
+
+        // --- UI ---
+        const UI = {
+            upd: () => {
+                document.getElementById('ui-gold').innerText=D.gold;
+                document.getElementById('ui-perls').innerText=D.perls;
+                if(R.active || D.char) {
+                    document.getElementById('ui-day').innerText=R.day;
+                    document.getElementById('ui-hp-txt').innerText=`${Math.floor(R.hp)}/${R.max}`;
+                    document.getElementById('ui-hp-bar').style.width=(R.hp/R.max*100)+"%";
+                    document.getElementById('ui-atk').innerText=R.atk;
+                    document.getElementById('ui-def').innerText=R.def;
+                    
+                    let ls=document.getElementById('list-skills'); ls.innerHTML='';
+                    R.skills.forEach(s=>{ let d=DB.skills[s.id]; ls.innerHTML+=`<div class="text-xs bg-white/10 p-1 mb-1 rounded flex justify-between"><span class="${d.c}">${d.i} ${d.n}</span><span>L.${s.lvl}</span></div>`; });
+                }
+                const set=(id,it,p)=>{document.getElementById(id).innerText=it?it.e:p;};
+                set('slot-w',D.weapon,'⚔️'); set('slot-h',D.head,'🛡️'); set('slot-p',D.pet,'🐾');
+                
+                let gi=document.getElementById('grid-inv'); gi.innerHTML='';
+                D.inv.forEach((it,i)=>{ 
+                    let d=document.createElement('div'); d.className=`slot ${it.r}`; d.innerText=it.e; 
+                    d.onclick=()=>Core.equip(i); gi.appendChild(d);
+                });
+                
+                if(D.char) document.getElementById('vis-hero').innerText=D.char;
+            },
+            bar: () => document.getElementById('ui-en-bar').style.width=(C.hp/C.max*100)+"%",
+            scene: (t) => {
+                let e=document.getElementById('enemy-box'), tx=document.getElementById('text-box');
+                if(t==='com'){e.classList.remove('hidden'); tx.classList.add('hidden');}
+                else{e.classList.add('hidden'); tx.classList.remove('hidden');}
+            },
+            btn: (t,a,dis) => { let b=document.getElementById('btn-act'); b.innerText=t; Conf.act=a; b.disabled=dis; },
+            txt: (t,s) => { document.getElementById('txt-title').innerText=t; document.getElementById('txt-sub').innerText=s; },
+            log: (m) => { let l=document.getElementById('logs'); l.innerHTML=`<div>> ${m}</div>`+l.innerHTML; },
+            fx: (t,c,id) => {
+                let el=document.createElement('div'); el.className='dmg-float'; el.style.color=c; el.innerText=t;
+                let r=document.getElementById(id).getBoundingClientRect();
+                el.style.left=(r.left+20)+'px'; el.style.top=r.top+'px';
+                document.getElementById('particle-layer').appendChild(el); setTimeout(()=>el.remove(),800);
+            },
+            modal: (t) => {
+                let l=document.getElementById('modal-layer'), c=document.getElementById('modal-content');
+                l.classList.add('show');
+                if(t==='char') c.innerHTML=`<h2 class="text-white text-2xl font-bold mb-4">HÉROS</h2><div class="flex gap-2 justify-center">${DB.chars.map(x=>`<button onclick="Core.pick('${x.id}')" class="text-5xl p-2 bg-slate-800 rounded hover:scale-110">${x.id}</button>`).join('')}</div>`;
+                if(t==='skill') {
+                    let k=Object.keys(DB.skills)[Math.floor(Math.random()*4)]; let s=DB.skills[k];
+                    c.innerHTML=`<h2 class="text-white text-xl font-bold mb-2">MODULE</h2><div class="text-4xl mb-2">${s.i}</div><div class="text-white mb-4">${s.n}</div><button onclick="Core.addSkill('${k}')" class="bg-yellow-600 text-white px-4 py-2 rounded font-bold">INSTALLER</button>`;
+                }
+            },
+            tab: (t) => {
+                document.getElementById('view-hub').classList.toggle('hidden', t!=='hub');
+            }
+        };
+
+        // BOOT
+        window.onload = Core.init;
+    </script>
 </body>
 </html>
