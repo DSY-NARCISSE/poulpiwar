@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Octo Go: Infinity - Dev Build</title>
+    <title>Octo Go: Infinity - Stable V14</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,8 +17,7 @@
     <div id="floating-tooltip" class="tooltip hidden"></div>
 
     <div id="modal-overlay" class="modal-overlay hidden">
-        <div id="modal-content" class="modal-box">
-            </div>
+        <div id="modal-content" class="modal-box"></div>
     </div>
 
     <div class="main-grid">
@@ -27,10 +26,10 @@
             <div class="panel h-full flex flex-col relative overflow-hidden">
                 <div class="panel-header">
                     <div class="flex items-center gap-2">
-                        <div class="status-dot online"></div>
+                        <div id="sys-status" class="status-dot"></div>
                         <h2 class="font-tech text-xl text-blue-400">PILOTE</h2>
                     </div>
-                    <span class="text-xs text-slate-500 font-mono">ID: OCTO-V13</span>
+                    <span class="text-xs text-slate-500 font-mono">ID: OCTO-V14</span>
                 </div>
 
                 <div class="hero-container group">
@@ -38,9 +37,8 @@
                         <div class="text-3xl font-bold text-white font-tech">LVL <span id="ui-lvl">1</span></div>
                         <div class="text-xs text-blue-300">EXP 0 / 100</div>
                     </div>
-                    <div id="vis-hero" class="hero-avatar">🐙</div>
+                    <div id="vis-hero" class="hero-avatar">?</div>
                     <div id="vis-pet" class="pet-avatar"></div>
-                    
                     <div class="scanlines"></div>
                 </div>
 
@@ -48,30 +46,16 @@
                     <div class="stat-group">
                         <div class="flex justify-between text-xs font-bold text-slate-400 mb-1">
                             <span>INTÉGRITÉ</span>
-                            <span id="ui-hp-txt" class="text-white font-mono">100/100</span>
+                            <span id="ui-hp-txt" class="text-white font-mono">---/---</span>
                         </div>
-                        <div class="bar-track">
-                            <div id="ui-hp-bar" class="bar-fill hp-fill" style="width: 100%;"></div>
-                        </div>
+                        <div class="bar-track"><div id="ui-hp-bar" class="bar-fill hp-fill" style="width: 0%;"></div></div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="stat-box" data-tip="Dégâts infligés par tour">
-                            <div class="stat-label">PUISSANCE</div>
-                            <div class="stat-value text-blue-400" id="ui-atk">10</div>
-                        </div>
-                        <div class="stat-box" data-tip="Réduction des dégâts reçus">
-                            <div class="stat-label">BLINDAGE</div>
-                            <div class="stat-value text-green-400" id="ui-def">0</div>
-                        </div>
-                        <div class="stat-box" data-tip="Chance de coup double">
-                            <div class="stat-label">CRITIQUE</div>
-                            <div class="stat-value text-red-400" id="ui-crit">5%</div>
-                        </div>
-                        <div class="stat-box" data-tip="Multiplicateur de vitesse">
-                            <div class="stat-label">VITESSE</div>
-                            <div class="stat-value text-yellow-400" id="ui-spd">1.0</div>
-                        </div>
+                        <div class="stat-box" data-label="PUISSANCE"><div class="stat-value text-blue-400" id="ui-atk">-</div></div>
+                        <div class="stat-box" data-label="BLINDAGE"><div class="stat-value text-green-400" id="ui-def">-</div></div>
+                        <div class="stat-box" data-label="CRITIQUE"><div class="stat-value text-red-400" id="ui-crit">-</div></div>
+                        <div class="stat-box" data-label="VITESSE"><div class="stat-value text-yellow-400" id="ui-spd">-</div></div>
                     </div>
                 </div>
 
@@ -83,18 +67,19 @@
                         <div id="slot-p" class="slot flex-1 text-slate-600">🐾</div>
                     </div>
                 </div>
-
-                <button onclick="Core.hardReset()" class="reset-btn">RÉINITIALISER SYSTÈME</button>
+                
+                <div class="text-center p-2">
+                    <button onclick="Core.hardReset()" class="text-[9px] text-red-900 hover:text-red-500 uppercase font-bold tracking-widest transition-colors">Formatage Système</button>
+                </div>
             </div>
         </div>
 
         <div class="col-center">
-            
             <div class="panel p-3 flex justify-between items-center px-6">
                 <div class="flex items-center gap-4">
                     <span class="font-bold text-blue-400 tracking-widest font-tech">SECTEUR <span id="ui-zone" class="text-white">1-1</span></span>
                     <div class="h-4 w-px bg-slate-700"></div>
-                    <span class="text-xs text-slate-400">JOUR <span id="ui-day" class="text-white font-bold text-sm">1</span></span>
+                    <span class="text-xs text-slate-400">CYCLE <span id="ui-day" class="text-white font-bold text-sm">1</span></span>
                 </div>
                 <div class="flex gap-6 font-mono text-lg font-bold">
                     <span class="res-gold">🪙 <span id="ui-gold">0</span></span>
@@ -105,18 +90,15 @@
             <div class="panel stage-container">
                 <div class="stage-bg"></div>
                 
-                <div id="enemy-container" class="enemy-wrapper hidden">
-                    <div class="enemy-hp-track">
-                        <div id="ui-enemy-bar" class="enemy-hp-fill"></div>
-                    </div>
+                <div id="enemy-container" class="enemy-wrapper hidden opacity-0 transition-opacity duration-500">
+                    <div class="enemy-hp-track"><div id="ui-enemy-bar" class="enemy-hp-fill"></div></div>
                     <div id="vis-enemy" class="enemy-sprite">🦀</div>
-                    <div id="enemy-debuffs" class="debuff-row"></div>
-                    <div id="enemy-name" class="enemy-tag">CRABE</div>
+                    <div id="enemy-name" class="enemy-tag">CIBLE</div>
                 </div>
 
                 <div id="narrative-layer" class="narrative-box">
-                    <h1 id="txt-main" class="narrative-title">INITIALISATION</h1>
-                    <p id="txt-sub" class="narrative-sub">En attente des ordres...</p>
+                    <h1 id="txt-main" class="narrative-title">SYSTÈME EN PAUSE</h1>
+                    <p id="txt-sub" class="narrative-sub">En attente de commandes...</p>
                 </div>
             </div>
 
@@ -126,12 +108,11 @@
                         <span class="section-title mb-0">STOCKAGE</span>
                         <button onclick="Core.openChest()" class="btn-chest">🎁 COFFRE (5✨)</button>
                     </div>
-                    <div id="grid-inv" class="inv-grid">
-                        </div>
+                    <div id="grid-inv" class="inv-grid"></div>
                 </div>
 
                 <div class="col-span-4 flex flex-col gap-2">
-                    <button id="btn-main" class="btn-mega">DÉMARRER</button>
+                    <button id="btn-main" class="btn-mega">INITIALISER</button>
                     <div class="flex gap-2 h-10">
                         <button id="btn-auto" onclick="Core.toggleAuto()" class="btn-mini">AUTO: OFF</button>
                         <button id="btn-spd" onclick="Core.toggleSpeed()" class="btn-mini">VIT: x1</button>
@@ -151,12 +132,12 @@
             <div class="panel h-1/3 p-3 flex flex-col">
                 <div class="panel-header mb-1">JOURNAL SYSTÈME</div>
                 <div id="game-logs" class="log-container">
-                    <div class="log-line"><span class="text-blue-500">[SYS]</span> Interface chargée.</div>
+                    <div class="log-line"><span class="text-blue-500">[SYS]</span> Démarrage...</div>
                 </div>
             </div>
             
             <div class="flex gap-2 mt-2">
-                <button onclick="UI.switchTab('adventure')" id="nav-adv" class="btn-nav active">AVENTURE</button>
+                <button onclick="UI.switchTab('adventure')" id="nav-adv" class="btn-nav active">MISSION</button>
                 <button onclick="UI.switchTab('hub')" id="nav-hub" class="btn-nav">BASE</button>
             </div>
         </div>
@@ -188,10 +169,7 @@
 
     </div>
 
-    <script src="js/1_database.js"></script>
-    <script src="js/2_state.js"></script>
-    <script src="js/3_ui.js"></script>
-    <script src="js/4_engine.js"></script>
+    <script src="script.js"></script>
 
 </body>
 </html>
